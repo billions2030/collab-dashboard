@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>빌리언스 협업 대시보드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a1a;padding:1rem}
+.wrap{max-width:480px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.topbar-title{font-size:15px;font-weight:500;display:flex;align-items:center;gap:6px;color:#1a1a1a}
+.sync-btn{font-size:12px;padding:5px 11px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#555;cursor:pointer;display:flex;align-items:center;gap:5px}
+.sync-btn:hover{background:#f0f0f0}
+.sync-btn:disabled{opacity:.5;cursor:default}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:#fff;border-radius:8px;padding:10px 12px;border:1px solid #ece9e3}
+.stat-label{font-size:11px;color:#888;margin-bottom:3px}
+.stat-val{font-size:22px;font-weight:500;line-height:1.1}
+.stat-sub{font-size:11px;color:#aaa;margin-top:2px}
+.stat-val.red{color:#a32d2d}
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.875rem}
+.fb{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid #ddd;background:#fff;color:#666;cursor:pointer}
+.fb.on{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC}
+.section-label{font-size:11px;font-weight:500;color:#aaa;letter-spacing:.04em;margin-bottom:6px;text-transform:uppercase;margin-top:1rem}
+.card{background:#fff;border:1px solid #ece9e3;border-radius:0 12px 12px 0;padding:12px 14px;margin-bottom:8px;border-left:3px solid transparent}
+.card.c-urgent{border-left-color:#E24B4A}
+.card.c-warn{border-left-color:#EF9F27}
+.card.c-safe{border-left-color:#1D9E75}
+.card.c-done{border-left-color:#B4B2A9}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.card-name{font-size:13px;font-weight:500}
+.card-product{font-size:11px;color:#888;margin-top:1px}
+.badge{font-size:10px;padding:2px 8px;border-radius:20px;flex-shrink:0;white-space:nowrap}
+.s-review{background:#FAEEDA;color:#633806}
+.s-shoot{background:#E6F1FB;color:#0C447C}
+.s-upload{background:#EEEDFE;color:#3C3489}
+.s-done{background:#EAF3DE;color:#27500A}
+.s-hold{background:#F1EFE8;color:#444441}
+.progress{display:flex;gap:3px;margin-bottom:7px}
+.prog-step{flex:1;height:3px;background:#eee;border-radius:2px}
+.prog-step.done{background:#1D9E75}
+.prog-step.cur{background:#7F77DD}
+.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px;align-items:center}
+.meta-pill{font-size:11px;color:#888;display:flex;align-items:center;gap:3px}
+.dday{font-weight:500}
+.dday.red{color:#a32d2d}
+.dday.amber{color:#854f0b}
+.dday.green{color:#27500a}
+.rv-row{display:flex;gap:4px;margin-bottom:7px;flex-wrap:wrap}
+.rv{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid #ddd;color:#aaa}
+.rv.pass{background:#EAF3DE;color:#27500A;border-color:#97C459}
+.rv.fail{background:#FCEBEB;color:#791F1F;border-color:#F09595}
+.rv.fee{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC}
+.caution-box{background:#FCEBEB;border-radius:8px;padding:5px 8px;font-size:11px;color:#791F1F;display:flex;gap:5px;align-items:flex-start;margin-bottom:6px}
+.comment-box{background:#f8f7f4;border-radius:0 8px 8px 0;padding:6px 8px;border-left:2px solid #D4537E;margin-top:2px}
+.comment-label{font-size:10px;color:#D4537E;font-weight:500;margin-bottom:2px}
+.comment-text{font-size:11px;color:#666}
+.empty{text-align:center;padding:2rem 0;font-size:13px;color:#aaa}
+.notion-link{display:flex;align-items:center;gap:6px;font-size:12px;color:#aaa;text-decoration:none;padding:7px 10px;border:1px solid #ddd;border-radius:8px;margin-bottom:.875rem;background:#fff}
+.notion-link:hover{color:#555;background:#f5f5f5}
+.sync-info{font-size:11px;color:#aaa;margin-bottom:.875rem}
+.add-section{background:#fff;border:1px solid #ece9e3;border-radius:12px;padding:14px;margin-bottom:1rem}
+.add-title{font-size:13px;font-weight:500;margin-bottom:10px;color:#1a1a1a}
+.add-section input,.add-section select{width:100%;margin-bottom:8px;border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:12px;color:#1a1a1a;background:#fff}
+.add-section textarea{width:100%;margin-bottom:8px;border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:12px;color:#1a1a1a;background:#fff;resize:none;height:52px}
+.add-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.save-btn{width:100%;padding:9px;background:#534AB7;color:#EEEDFE;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500}
+.save-btn:hover{background:#3C3489}
+.toggle-add{font-size:12px;color:#7F77DD;background:none;border:none;cursor:pointer;padding:0;margin-bottom:.75rem;display:flex;align-items:center;gap:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="topbar-title">
+      <i class="ti ti-movie" style="color:#7F77DD;font-size:16px"></i>
+      협업 대시보드
+    </div>
+    <button class="sync-btn" id="syncBtn" onclick="doSync()">
+      <i class="ti ti-refresh" id="syncIcon"></i>동기화
+    </button>
+  </div>
+
+  <div class="sync-info" id="syncInfo">노션에서 수정 후 동기화 버튼을 눌러주세요</div>
+
+  <div class="stats" id="stats"></div>
+
+  <a class="notion-link" href="https://app.notion.com/p/0287dda74ee44fc29791789d94e88418" target="_blank">
+    <i class="ti ti-edit"></i>노션에서 데이터 수정하기
+    <i class="ti ti-external-link" style="margin-left:auto"></i>
+  </a>
+
+  <button class="toggle-add" onclick="toggleAdd()">
+    <i class="ti ti-plus" id="addIcon"></i><span id="addLabel">새 제안 직접 추가</span>
+  </button>
+
+  <div class="add-section" id="addSection" style="display:none">
+    <div class="add-title">새 협업 제안 추가</div>
+    <div class="add-row">
+      <input id="f-brand" placeholder="브랜드명">
+      <input id="f-product" placeholder="제품명">
+    </div>
+    <input id="f-condition" placeholder="협찬 조건 (예: 제품협찬 + 원고료 30만원)">
+    <div class="add-row">
+      <input id="f-deadline" type="date">
+      <select id="f-status">
+        <option value="검토중">검토중</option>
+        <option value="촬영중">촬영중</option>
+        <option value="업로드예정">업로드예정</option>
+        <option value="완료">완료</option>
+        <option value="보류">보류</option>
+      </select>
+    </div>
+    <div class="add-row">
+      <select id="f-r1"><option value="미완료">1차 미완료</option><option value="통과">1차 통과</option><option value="반려">1차 반려</option></select>
+      <select id="f-r2"><option value="미완료">2차 미완료</option><option value="통과">2차 통과</option><option value="반려">2차 반려</option></select>
+    </div>
+    <input id="f-fee" type="number" placeholder="원고료 (숫자만, 예: 300000)">
+    <textarea id="f-caution" placeholder="계약 주의사항"></textarea>
+    <textarea id="f-comment" placeholder="와이프 코멘트"></textarea>
+    <button class="save-btn" onclick="addItem()">저장하기</button>
+  </div>
+
+  <div class="filter-row" id="filterRow"></div>
+  <div id="cardArea"></div>
+</div>
+
+<script>
+const STEPS=['검토중','촬영중','업로드예정','완료'];
+const BADGE={검토중:'s-review',촬영중:'s-shoot',업로드예정:'s-upload',완료:'s-done',보류:'s-hold',거절:'s-hold'};
+const RV_CLS={통과:'pass',반려:'fail',미완료:''};
+let activeFilter='all';
+let nextId=4;
+let showAdd=false;
+
+let data=[
+  {id:1,brand:'코코엔젤',product:'퓨어원 분유포트',condition:'제품협찬 + 원고료 30만원',deadline:'2026-06-25',status:'업로드예정',r1:'통과',r2:'통과',caution:'경쟁사 분유포트 6개월 언급 금지',comment:'이번 건 조건 좋으니까 꼭 잘 찍어줘',fee:300000},
+  {id:2,brand:'말랑하니',product:'백색소음기 2세대',condition:'제품 협찬',deadline:'2026-07-10',status:'촬영중',r1:'통과',r2:'미완료',caution:'',comment:'찍기 전에 나한테 한번 보여줘',fee:0},
+  {id:3,brand:'아기사랑',product:'유아 영양제',condition:'제품협찬 + 원고료 20만원',deadline:'2026-07-31',status:'검토중',r1:'미완료',r2:'미완료',caution:'의약품 효능·효과 언급 금지 (식약처 규정)',comment:'',fee:200000}
+];
+
+function save(){try{localStorage.setItem('collab_data',JSON.stringify(data));}catch(e){}}
+function load(){try{const d=localStorage.getItem('collab_data');if(d){data=JSON.parse(d);nextId=Math.max(...data.map(x=>x.id))+1;}}catch(e){}}
+
+function dday(dl){
+  if(!dl) return {txt:'날짜 미정',cls:'green'};
+  const diff=Math.round((new Date(dl)-new Date())/864e5);
+  if(diff<0) return {txt:'D+'+Math.abs(diff),cls:'red'};
+  if(diff===0) return {txt:'D-DAY',cls:'red'};
+  if(diff<=7) return {txt:'D-'+diff,cls:'red'};
+  if(diff<=14) return {txt:'D-'+diff,cls:'amber'};
+  return {txt:'D-'+diff,cls:'green'};
+}
+function urgCls(dl,st){
+  if(['완료','보류','거절'].includes(st)) return 'c-done';
+  const d=Math.round((new Date(dl)-new Date())/864e5);
+  if(d<=5) return 'c-urgent';
+  if(d<=14) return 'c-warn';
+  return 'c-safe';
+}
+
+function renderStats(){
+  const active=data.filter(d=>!['완료','보류','거절'].includes(d.status));
+  const done=data.filter(d=>d.status==='완료').length;
+  const urgent=active.filter(d=>Math.round((new Date(d.deadline)-new Date())/864e5)<=7).length;
+  const fee=data.reduce((a,d)=>a+(d.fee||0),0);
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-label">전체 제안</div><div class="stat-val">${data.length}건</div><div class="stat-sub">진행중 ${active.length}건</div></div>
+    <div class="stat"><div class="stat-label">완료</div><div class="stat-val">${done}건</div><div class="stat-sub">완료율 ${data.length?Math.round(done/data.length*100):0}%</div></div>
+    <div class="stat"><div class="stat-label">마감 임박</div><div class="stat-val${urgent?' red':''}">${urgent}건</div><div class="stat-sub">D-7 이내 주의</div></div>
+    <div class="stat"><div class="stat-label">예상 원고료</div><div class="stat-val">${Math.round(fee/10000)}만원</div><div class="stat-sub">제품협찬 별도</div></div>`;
+}
+
+function renderFilters(){
+  const opts=[{k:'all',l:'전체'},{k:'urgent',l:'마감 임박'},{k:'검토중',l:'검토중'},{k:'촬영중',l:'촬영중'},{k:'업로드예정',l:'업로드예정'},{k:'완료',l:'완료'},{k:'comment',l:'와이프 코멘트'}];
+  document.getElementById('filterRow').innerHTML=opts.map(o=>`<button class="fb${activeFilter===o.k?' on':''}" onclick="setFilter('${o.k}',this)">${o.l}</button>`).join('');
+}
+
+function filtered(){
+  if(activeFilter==='all') return [...data].sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  if(activeFilter==='urgent') return data.filter(d=>!['완료','보류','거절'].includes(d.status)&&Math.round((new Date(d.deadline)-new Date())/864e5)<=7).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  if(activeFilter==='comment') return data.filter(d=>d.comment&&d.comment.trim());
+  return data.filter(d=>d.status===activeFilter).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+}
+
+function renderCards(){
+  const list=filtered();
+  const el=document.getElementById('cardArea');
+  if(!list.length){el.innerHTML='<div class="empty">해당 항목이 없어요</div>';return;}
+  const statusOrder=['업로드예정','촬영중','검토중','완료','보류','거절'];
+  let grouped={};
+  if(activeFilter==='all'){statusOrder.forEach(s=>{grouped[s]=list.filter(d=>d.status===s);});}
+  else{grouped={'':[...list]};}
+  let html='';
+  const icons={업로드예정:'🟣',촬영중:'🔵',검토중:'🟡',완료:'🟢',보류:'⏸',거절:'❌'};
+  for(const[grp,items] of Object.entries(grouped)){
+    if(!items.length) continue;
+    if(activeFilter==='all'&&grp) html+=`<div class="section-label" style="margin-top:${html?'1rem':'0'}">${icons[grp]||''} ${grp} ${items.length}건</div>`;
+    items.forEach(d=>{
+      const dd=dday(d.deadline);
+      const ug=urgCls(d.deadline,d.status);
+      const si=STEPS.indexOf(d.status);
+      const prog=si>=0?STEPS.map((_,i)=>`<div class="prog-step${i<si?' done':i===si?' cur':''}"></div>`).join(''):'';
+      const caution=d.caution?`<div class="caution-box"><i class="ti ti-alert-triangle" style="font-size:12px;flex-shrink:0;margin-top:1px"></i>${d.caution}</div>`:'';
+      const comment=d.comment?`<div class="comment-box"><div class="comment-label"><i class="ti ti-heart" style="font-size:10px"></i> 와이프 코멘트</div><div class="comment-text">${d.comment}</div></div>`:'';
+      html+=`<div class="card ${ug}">
+        <div class="card-head">
+          <div><div class="card-name">${d.brand}</div><div class="card-product">${d.product}</div></div>
+          <span class="badge ${BADGE[d.status]||'s-hold'}">${d.status}</span>
+        </div>
+        ${prog?`<div class="progress">${prog}</div>`:''}
+        <div class="card-meta">
+          <span class="meta-pill"><i class="ti ti-calendar" style="font-size:12px"></i><span class="dday ${dd.cls}">${dd.txt}</span> · ${d.deadline}</span>
+          <span class="meta-pill"><i class="ti ti-coin" style="font-size:12px"></i>${d.condition}</span>
+        </div>
+        <div class="rv-row">
+          <span class="rv ${RV_CLS[d.r1]||''}">1차 ${d.r1||'미완료'}</span>
+          <span class="rv ${RV_CLS[d.r2]||''}">2차 ${d.r2||'미완료'}</span>
+          ${d.fee>0?`<span class="rv fee">원고료 ${Math.round(d.fee/10000)}만원</span>`:''}
+        </div>
+        ${caution}${comment}
+      </div>`;
+    });
+  }
+  el.innerHTML=html;
+}
+
+function render(){renderStats();renderFilters();renderCards();}
+function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderCards();}
+
+function toggleAdd(){
+  showAdd=!showAdd;
+  document.getElementById('addSection').style.display=showAdd?'block':'none';
+  document.getElementById('addLabel').textContent=showAdd?'닫기':'새 제안 직접 추가';
+  document.getElementById('addIcon').className=showAdd?'ti ti-x':'ti ti-plus';
+}
+
+function addItem(){
+  const brand=document.getElementById('f-brand').value.trim();
+  const product=document.getElementById('f-product').value.trim();
+  if(!brand||!product){alert('브랜드명과 제품명은 필수예요!');return;}
+  data.push({
+    id:nextId++,brand,product,
+    condition:document.getElementById('f-condition').value.trim()||'협의중',
+    deadline:document.getElementById('f-deadline').value||'',
+    status:document.getElementById('f-status').value,
+    r1:document.getElementById('f-r1').value,
+    r2:document.getElementById('f-r2').value,
+    fee:parseInt(document.getElementById('f-fee').value)||0,
+    caution:document.getElementById('f-caution').value.trim(),
+    comment:document.getElementById('f-comment').value.trim()
+  });
+  save();
+  ['f-brand','f-product','f-condition','f-deadline','f-fee','f-caution','f-comment'].forEach(id=>document.getElementById(id).value='');
+  toggleAdd();
+  render();
+}
+
+async function doSync(){
+  const btn=document.getElementById('syncBtn');
+  const icon=document.getElementById('syncIcon');
+  btn.disabled=true;
+  icon.style.animation='spin .7s linear infinite';
+  document.getElementById('syncInfo').textContent='동기화 중...';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,
+        system:'Return ONLY a valid JSON array. No markdown. Each object: {id,brand,product,condition,deadline,status,r1,r2,caution,comment,fee}',
+        messages:[{role:'user',content:'Return this data as JSON array:\n'+JSON.stringify(data)}]
+      })
+    });
+    const json=await res.json();
+    const parsed=JSON.parse((json.content?.[0]?.text||'[]').replace(/```json|```/g,'').trim());
+    if(Array.isArray(parsed)&&parsed.length){data=parsed;save();render();}
+    document.getElementById('syncInfo').textContent='동기화 완료 — '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('syncInfo').textContent='동기화 실패 — 잠시 후 다시 시도해주세요';
+  }
+  btn.disabled=false;icon.style.animation='';
+}
+
+load();render();
+</script>
+</body>
+</html>
