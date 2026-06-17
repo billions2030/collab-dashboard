@@ -101,103 +101,103 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-const PROXY = 'https://notion-proxy.rmsgh4655.workers.dev';
-const DB_ID = '0287dda74ee44fc29791789d94e88418';
-const STEPS = ['검토중','촬영중','업로드예정','완료'];
-const BADGE = {검토중:'s-review',촬영중:'s-shoot',업로드예정:'s-upload',완료:'s-done',보류:'s-hold',거절:'s-hold'};
-const RV_CLS = {통과:'pass',반려:'fail',미완료:''};
-let activeFilter = 'all';
-let data = [];
+const PROXY='https://notion-proxy.rmsgh4655.workers.dev';
+const DB_ID='0287dda74ee44fc29791789d94e88418';
+const STEPS=['검토중','촬영중','업로드예정','완료'];
+const BADGE={검토중:'s-review',촬영중:'s-shoot',업로드예정:'s-upload',완료:'s-done',보류:'s-hold',거절:'s-hold'};
+const RV_CLS={통과:'pass',반려:'fail',미완료:''};
+let activeFilter='all';
+let data=[];
 
-function getKey(){ return localStorage.getItem('notion_api_key')||''; }
+function getKey(){return localStorage.getItem('notion_api_key')||'';}
 
 function saveApiKey(){
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if(!key){ alert('API 키를 입력해주세요!'); return; }
-  localStorage.setItem('notion_api_key', key);
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key){alert('API 키를 입력해주세요!');return;}
+  localStorage.setItem('notion_api_key',key);
   document.getElementById('apiSetup').style.display='none';
   doSync();
 }
 
 function dday(dl){
-  if(!dl) return {txt:'날짜 미정',cls:'green'};
-  const diff = Math.round((new Date(dl)-new Date())/864e5);
-  if(diff<0) return {txt:'D+'+Math.abs(diff),cls:'red'};
-  if(diff===0) return {txt:'D-DAY',cls:'red'};
-  if(diff<=7) return {txt:'D-'+diff,cls:'red'};
-  if(diff<=14) return {txt:'D-'+diff,cls:'amber'};
-  return {txt:'D-'+diff,cls:'green'};
+  if(!dl)return{txt:'날짜 미정',cls:'green'};
+  const diff=Math.round((new Date(dl)-new Date())/864e5);
+  if(diff<0)return{txt:'D+'+Math.abs(diff),cls:'red'};
+  if(diff===0)return{txt:'D-DAY',cls:'red'};
+  if(diff<=7)return{txt:'D-'+diff,cls:'red'};
+  if(diff<=14)return{txt:'D-'+diff,cls:'amber'};
+  return{txt:'D-'+diff,cls:'green'};
 }
 function urgCls(dl,st){
-  if(['완료','보류','거절'].includes(st)) return 'c-done';
-  const d = Math.round((new Date(dl)-new Date())/864e5);
-  if(d<=5) return 'c-urgent';
-  if(d<=14) return 'c-warn';
-  return 'c-safe';
+  if(['완료','보류','거절'].includes(st))return'c-done';
+  const d=Math.round((new Date(dl)-new Date())/864e5);
+  if(d<=5)return'c-urgent';
+  if(d<=14)return'c-warn';
+  return'c-safe';
 }
 
 function parseNotionData(results){
   return results.map((r,i)=>{
-    const p = r.properties;
-    const getTitle = k => p[k]?.title?.[0]?.plain_text||'';
-    const getRich  = k => p[k]?.rich_text?.[0]?.plain_text||'';
-    const getSel   = k => p[k]?.select?.name||'';
-    const getDate  = k => p[k]?.date?.start||'';
-    const getNum   = k => p[k]?.number||0;
-    const fullName = getTitle('브랜드 / 제품명');
-    const parts = fullName.split('·');
-    return {
-      id: i+1,
-      brand:     parts[0]?.trim()||fullName,
-      product:   parts[1]?.trim()||'',
-      condition: getRich('협찬 조건'),
-      deadline:  getDate('마감일'),
-      status:    getSel('진행 상태'),
-      r1:        getSel('1차 검토')||'미완료',
-      r2:        getSel('2차 검토')||'미완료',
-      caution:   getRich('계약 주의사항'),
-      comment:   getRich('와이프 코멘트'),
-      fee:       getNum('원고료')
+    const p=r.properties;
+    const getTitle=k=>p[k]?.title?.[0]?.plain_text||'';
+    const getRich=k=>p[k]?.rich_text?.[0]?.plain_text||'';
+    const getSel=k=>p[k]?.select?.name||'';
+    const getDate=k=>p[k]?.date?.start||'';
+    const getNum=k=>p[k]?.number||0;
+    const fullName=getTitle('브랜드 / 제품명');
+    const parts=fullName.split('·');
+    return{
+      id:i+1,
+      brand:parts[0]?.trim()||fullName,
+      product:parts[1]?.trim()||'',
+      condition:getRich('협찬 조건'),
+      deadline:getDate('마감일'),
+      status:getSel('진행 상태'),
+      r1:getSel('1차 검토')||'미완료',
+      r2:getSel('2차 검토')||'미완료',
+      caution:getRich('계약 주의사항'),
+      comment:getRich('와이프 코멘트'),
+      fee:getNum('원고료')
     };
   });
 }
 
 async function doSync(){
-  const key = getKey();
-  if(!key){ document.getElementById('apiSetup').style.display='block'; return; }
-  const btn = document.getElementById('syncBtn');
-  const icon = document.getElementById('syncIcon');
-  btn.disabled = true;
-  icon.style.animation = 'spin .7s linear infinite';
-  document.getElementById('syncInfo').textContent = '노션에서 데이터 불러오는 중...';
+  const key=getKey();
+  if(!key){document.getElementById('apiSetup').style.display='block';return;}
+  const btn=document.getElementById('syncBtn');
+  const icon=document.getElementById('syncIcon');
+  btn.disabled=true;
+  icon.style.animation='spin .7s linear infinite';
+  document.getElementById('syncInfo').textContent='노션에서 데이터 불러오는 중...';
   try{
-    const res = await fetch(`${PROXY}/v1/databases/${DB_ID}/query`,{
+    const res=await fetch(`${PROXY}/v1/databases/${DB_ID}/query`,{
       method:'POST',
       headers:{
         'Authorization':'Bearer '+key,
         'Notion-Version':'2022-06-28',
         'Content-Type':'application/json'
       },
-      body: JSON.stringify({ sorts:[{property:'마감일',direction:'ascending'}] })
+      body:JSON.stringify({sorts:[{property:'마감일',direction:'ascending'}]})
     });
-    if(!res.ok) throw new Error('API 오류: '+res.status);
-    const json = await res.json();
-    data = parseNotionData(json.results);
+    if(!res.ok)throw new Error('오류:'+res.status);
+    const json=await res.json();
+    data=parseNotionData(json.results);
     render();
-    document.getElementById('syncInfo').textContent = '동기화 완료 — '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('syncInfo').textContent='동기화 완료 — '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
-    document.getElementById('syncInfo').textContent = '동기화 실패 — API 키 또는 연결을 확인해주세요';
+    document.getElementById('syncInfo').textContent='동기화 실패 — API 키를 확인해주세요';
     console.error(e);
   }
-  btn.disabled = false;
-  icon.style.animation = '';
+  btn.disabled=false;
+  icon.style.animation='';
 }
 
 function renderStats(){
-  const active = data.filter(d=>!['완료','보류','거절'].includes(d.status));
-  const done = data.filter(d=>d.status==='완료').length;
-  const urgent = active.filter(d=>Math.round((new Date(d.deadline)-new Date())/864e5)<=7).length;
-  const fee = data.reduce((a,d)=>a+(d.fee||0),0);
+  const active=data.filter(d=>!['완료','보류','거절'].includes(d.status));
+  const done=data.filter(d=>d.status==='완료').length;
+  const urgent=active.filter(d=>Math.round((new Date(d.deadline)-new Date())/864e5)<=7).length;
+  const fee=data.reduce((a,d)=>a+(d.fee||0),0);
   document.getElementById('stats').innerHTML=`
     <div class="stat"><div class="stat-label">전체 제안</div><div class="stat-val">${data.length}건</div><div class="stat-sub">진행중 ${active.length}건</div></div>
     <div class="stat"><div class="stat-label">완료</div><div class="stat-val">${done}건</div><div class="stat-sub">완료율 ${data.length?Math.round(done/data.length*100):0}%</div></div>
@@ -211,32 +211,32 @@ function renderFilters(){
 }
 
 function filtered(){
-  if(activeFilter==='all') return [...data].sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
-  if(activeFilter==='urgent') return data.filter(d=>!['완료','보류','거절'].includes(d.status)&&Math.round((new Date(d.deadline)-new Date())/864e5)<=7).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
-  if(activeFilter==='comment') return data.filter(d=>d.comment&&d.comment.trim());
+  if(activeFilter==='all')return[...data].sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  if(activeFilter==='urgent')return data.filter(d=>!['완료','보류','거절'].includes(d.status)&&Math.round((new Date(d.deadline)-new Date())/864e5)<=7).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  if(activeFilter==='comment')return data.filter(d=>d.comment&&d.comment.trim());
   return data.filter(d=>d.status===activeFilter).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
 }
 
 function renderCards(){
-  const list = filtered();
-  const el = document.getElementById('cardArea');
-  if(!list.length){ el.innerHTML='<div class="empty">해당 항목이 없어요</div>'; return; }
-  const statusOrder = ['업로드예정','촬영중','검토중','완료','보류','거절'];
-  let grouped = {};
-  if(activeFilter==='all'){ statusOrder.forEach(s=>{ grouped[s]=list.filter(d=>d.status===s); }); }
-  else{ grouped={'':[...list]}; }
-  const icons = {업로드예정:'🟣',촬영중:'🔵',검토중:'🟡',완료:'🟢',보류:'⏸',거절:'❌'};
-  let html = '';
-  for(const[grp,items] of Object.entries(grouped)){
-    if(!items.length) continue;
-    if(activeFilter==='all'&&grp) html+=`<div class="section-label" style="margin-top:${html?'1rem':'0'}">${icons[grp]||''} ${grp} ${items.length}건</div>`;
+  const list=filtered();
+  const el=document.getElementById('cardArea');
+  if(!list.length){el.innerHTML='<div class="empty">해당 항목이 없어요</div>';return;}
+  const statusOrder=['업로드예정','촬영중','검토중','완료','보류','거절'];
+  let grouped={};
+  if(activeFilter==='all'){statusOrder.forEach(s=>{grouped[s]=list.filter(d=>d.status===s);});}
+  else{grouped={'':[...list]};}
+  const icons={업로드예정:'🟣',촬영중:'🔵',검토중:'🟡',완료:'🟢',보류:'⏸',거절:'❌'};
+  let html='';
+  for(const[grp,items]of Object.entries(grouped)){
+    if(!items.length)continue;
+    if(activeFilter==='all'&&grp)html+=`<div class="section-label" style="margin-top:${html?'1rem':'0'}">${icons[grp]||''} ${grp} ${items.length}건</div>`;
     items.forEach(d=>{
-      const dd = dday(d.deadline);
-      const ug = urgCls(d.deadline,d.status);
-      const si = STEPS.indexOf(d.status);
-      const prog = si>=0?STEPS.map((_,i)=>`<div class="prog-step${i<si?' done':i===si?' cur':''}"></div>`).join(''):'';
-      const caution = d.caution?`<div class="caution-box"><i class="ti ti-alert-triangle" style="font-size:12px;flex-shrink:0;margin-top:1px"></i>${d.caution}</div>`:'';
-      const comment = d.comment?`<div class="comment-box"><div class="comment-label"><i class="ti ti-heart" style="font-size:10px"></i> 와이프 코멘트</div><div class="comment-text">${d.comment}</div></div>`:'';
+      const dd=dday(d.deadline);
+      const ug=urgCls(d.deadline,d.status);
+      const si=STEPS.indexOf(d.status);
+      const prog=si>=0?STEPS.map((_,i)=>`<div class="prog-step${i<si?' done':i===si?' cur':''}"></div>`).join(''):'';
+      const caution=d.caution?`<div class="caution-box"><i class="ti ti-alert-triangle" style="font-size:12px;flex-shrink:0;margin-top:1px"></i>${d.caution}</div>`:'';
+      const comment=d.comment?`<div class="comment-box"><div class="comment-label"><i class="ti ti-heart" style="font-size:10px"></i> 와이프 코멘트</div><div class="comment-text">${d.comment}</div></div>`:'';
       html+=`<div class="card ${ug}">
         <div class="card-head">
           <div><div class="card-name">${d.brand}</div><div class="card-product">${d.product}</div></div>
@@ -256,18 +256,14 @@ function renderCards(){
       </div>`;
     });
   }
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
-function render(){ renderStats(); renderFilters(); renderCards(); }
-function setFilter(f,btn){ activeFilter=f; document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderCards(); }
+function render(){renderStats();renderFilters();renderCards();}
+function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderCards();}
 
-if(getKey()){
-  document.getElementById('apiSetup').style.display='none';
-  doSync();
-} else {
-  render();
-}
+document.getElementById('apiSetup').style.display='block';
+render();
 </script>
 </body>
 </html>
