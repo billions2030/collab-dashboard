@@ -61,11 +61,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sync-info{font-size:11px;color:#aaa;margin-bottom:.875rem}
 .notion-link{display:flex;align-items:center;gap:6px;font-size:12px;color:#aaa;text-decoration:none;padding:7px 10px;border:1px solid #ddd;border-radius:8px;margin-bottom:.875rem;background:#fff}
 .notion-link:hover{color:#555;background:#f5f5f5}
-.api-setup{background:#fff;border:1px solid #ece9e3;border-radius:12px;padding:14px;margin-bottom:1rem}
-.api-setup p{font-size:12px;color:#888;margin-bottom:8px}
-.api-setup input{width:100%;border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:12px;color:#1a1a1a;margin-bottom:8px}
-.api-save-btn{width:100%;padding:9px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500}
-.api-save-btn:hover{background:#3C3489}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -81,14 +76,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </button>
   </div>
 
-  <div class="sync-info" id="syncInfo">노션 API 키를 입력하면 자동 동기화돼요</div>
-
-  <div class="api-setup" id="apiSetup">
-    <p>노션 API 키를 입력해주세요 (한 번만 입력하면 저장돼요)</p>
-    <input type="password" id="apiKeyInput" placeholder="ntn_xxxxxxxxxxxxxxxx">
-    <button class="api-save-btn" onclick="saveApiKey()">저장하고 동기화 시작</button>
-  </div>
-
+  <div class="sync-info" id="syncInfo">동기화 버튼을 눌러주세요</div>
   <div class="stats" id="stats"></div>
 
   <a class="notion-link" href="https://app.notion.com/p/0287dda74ee44fc29791789d94e88418" target="_blank">
@@ -103,21 +91,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const PROXY='https://notion-proxy.rmsgh4655.workers.dev';
 const DB_ID='0287dda74ee44fc29791789d94e88418';
+const KEY='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';
 const STEPS=['검토중','촬영중','업로드예정','완료'];
 const BADGE={검토중:'s-review',촬영중:'s-shoot',업로드예정:'s-upload',완료:'s-done',보류:'s-hold',거절:'s-hold'};
 const RV_CLS={통과:'pass',반려:'fail',미완료:''};
 let activeFilter='all';
 let data=[];
-
-function getKey(){return localStorage.getItem('notion_api_key')||'';}
-
-function saveApiKey(){
-  const key=document.getElementById('apiKeyInput').value.trim();
-  if(!key){alert('API 키를 입력해주세요!');return;}
-  localStorage.setItem('notion_api_key',key);
-  document.getElementById('apiSetup').style.display='none';
-  doSync();
-}
 
 function dday(dl){
   if(!dl)return{txt:'날짜 미정',cls:'green'};
@@ -135,7 +114,6 @@ function urgCls(dl,st){
   if(d<=14)return'c-warn';
   return'c-safe';
 }
-
 function parseNotionData(results){
   return results.map((r,i)=>{
     const p=r.properties;
@@ -161,10 +139,7 @@ function parseNotionData(results){
     };
   });
 }
-
 async function doSync(){
-  const key=getKey();
-  if(!key){document.getElementById('apiSetup').style.display='block';return;}
   const btn=document.getElementById('syncBtn');
   const icon=document.getElementById('syncIcon');
   btn.disabled=true;
@@ -174,7 +149,7 @@ async function doSync(){
     const res=await fetch(`${PROXY}/v1/databases/${DB_ID}/query`,{
       method:'POST',
       headers:{
-        'Authorization':'Bearer '+key,
+        'Authorization':'Bearer '+KEY,
         'Notion-Version':'2022-06-28',
         'Content-Type':'application/json'
       },
@@ -186,13 +161,12 @@ async function doSync(){
     render();
     document.getElementById('syncInfo').textContent='동기화 완료 — '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
-    document.getElementById('syncInfo').textContent='동기화 실패 — API 키를 확인해주세요';
+    document.getElementById('syncInfo').textContent='동기화 실패 — 잠시 후 다시 시도해주세요';
     console.error(e);
   }
   btn.disabled=false;
   icon.style.animation='';
 }
-
 function renderStats(){
   const active=data.filter(d=>!['완료','보류','거절'].includes(d.status));
   const done=data.filter(d=>d.status==='완료').length;
@@ -204,19 +178,16 @@ function renderStats(){
     <div class="stat"><div class="stat-label">마감 임박</div><div class="stat-val${urgent?' red':''}">${urgent}건</div><div class="stat-sub">D-7 이내 주의</div></div>
     <div class="stat"><div class="stat-label">예상 원고료</div><div class="stat-val">${Math.round(fee/10000)}만원</div><div class="stat-sub">제품협찬 별도</div></div>`;
 }
-
 function renderFilters(){
   const opts=[{k:'all',l:'전체'},{k:'urgent',l:'마감 임박'},{k:'검토중',l:'검토중'},{k:'촬영중',l:'촬영중'},{k:'업로드예정',l:'업로드예정'},{k:'완료',l:'완료'},{k:'comment',l:'와이프 코멘트'}];
   document.getElementById('filterRow').innerHTML=opts.map(o=>`<button class="fb${activeFilter===o.k?' on':''}" onclick="setFilter('${o.k}',this)">${o.l}</button>`).join('');
 }
-
 function filtered(){
   if(activeFilter==='all')return[...data].sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
   if(activeFilter==='urgent')return data.filter(d=>!['완료','보류','거절'].includes(d.status)&&Math.round((new Date(d.deadline)-new Date())/864e5)<=7).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
   if(activeFilter==='comment')return data.filter(d=>d.comment&&d.comment.trim());
   return data.filter(d=>d.status===activeFilter).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
 }
-
 function renderCards(){
   const list=filtered();
   const el=document.getElementById('cardArea');
@@ -258,12 +229,10 @@ function renderCards(){
   }
   el.innerHTML=html;
 }
-
 function render(){renderStats();renderFilters();renderCards();}
 function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderCards();}
 
-document.getElementById('apiSetup').style.display='block';
-render();
+doSync();
 </script>
 </body>
 </html>
